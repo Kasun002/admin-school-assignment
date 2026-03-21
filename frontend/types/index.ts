@@ -23,3 +23,16 @@ export interface NotificationRecipientsResponse {
 export interface ApiError {
   message: string;
 }
+
+export interface StudentWithTeachers {
+  email: string;
+  isSuspended: boolean;
+  teachers: string[];
+}
+
+export interface PaginatedStudentsResponse {
+  data: StudentWithTeachers[];
+  total: number;
+  page: number;
+  limit: number;
+}

@@ -5,6 +5,7 @@ import type {
   RetrieveNotificationsPayload,
   CommonStudentsResponse,
   NotificationRecipientsResponse,
+  PaginatedStudentsResponse,
 } from "@/types";
 
 const client = axios.create({
@@ -36,6 +37,16 @@ export async function retrieveForNotifications(
   const { data } = await client.post<NotificationRecipientsResponse>(
     "/api/retrievefornotifications",
     payload
+  );
+  return data;
+}
+
+export async function getStudents(
+  page: number,
+  limit: number
+): Promise<PaginatedStudentsResponse> {
+  const { data } = await client.get<PaginatedStudentsResponse>(
+    `/api/students?page=${page}&limit=${limit}`
   );
   return data;
 }

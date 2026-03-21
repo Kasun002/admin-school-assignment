@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Student } from '@prisma/client';
 import { StudentsRepository } from './students.repository';
+import { PaginatedStudentsResponseDto } from './dto/student-with-teachers.dto';
 
 @Injectable()
 export class StudentsService {
@@ -24,5 +25,24 @@ export class StudentsService {
 
   async findActiveByEmails(emails: string[]): Promise<Student[]> {
     return this.studentsRepository.findActiveByEmails(emails);
+  }
+
+  async findWithTeachersPaginated(
+    page: number,
+    limit: number,
+  ): Promise<PaginatedStudentsResponseDto> {
+    const skip = (page - 1) * limit;
+    const { students, total } =
+      await this.studentsRepository.findWithTeachersPaginated(skip, limit);
+    return {
+      data: students.map((s) => ({
+        email: s.email,
+        isSuspended: s.isSuspended,
+        teachers: s.teachers.map((t) => t.teacher.email),
+      })),
+      total,
+      page,
+      limit,
+    };
   }
 }

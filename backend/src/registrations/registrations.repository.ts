@@ -28,6 +28,7 @@ export class RegistrationsRepository {
       INNER JOIN teacher_students ts ON ts.studentId = s.id
       INNER JOIN teachers t ON t.id = ts.teacherId
       WHERE t.email IN (${emailList})
+        AND s.isSuspended = false
       GROUP BY s.id, s.email
       HAVING COUNT(DISTINCT t.id) = ${count}
     `;

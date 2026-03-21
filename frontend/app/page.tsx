@@ -5,6 +5,7 @@ import RegisterSection from "@/components/RegisterSection";
 import CommonStudentsSection from "@/components/CommonStudentsSection";
 import NotificationsSection from "@/components/NotificationsSection";
 import SuspendModal from "@/components/SuspendModal";
+import StudentsTableSection from "@/components/StudentsTableSection";
 
 export default function Home() {
   const [suspendOpen, setSuspendOpen] = useState(false);
@@ -32,6 +33,7 @@ export default function Home() {
           <CommonStudentsSection />
         </div>
         <NotificationsSection />
+        <StudentsTableSection />
       </main>
 
       {suspendOpen && <SuspendModal onClose={() => setSuspendOpen(false)} />}
