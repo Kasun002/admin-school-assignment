@@ -1,8 +1,22 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import type { ValidationError } from 'class-validator';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+
+function extractMessages(errors: ValidationError[]): string[] {
+  const messages: string[] = [];
+  for (const error of errors) {
+    if (error.constraints) {
+      messages.push(...Object.values(error.constraints));
+    }
+    if (error.children?.length) {
+      messages.push(...extractMessages(error.children));
+    }
+  }
+  return messages;
+}
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +26,10 @@ async function bootstrap(): Promise<void> {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      exceptionFactory: (errors: ValidationError[]) => {
+        const messages = extractMessages(errors);
+        return new BadRequestException(messages.join('; '));
+      },
     }),
   );
 
