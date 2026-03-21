@@ -18,7 +18,6 @@ const mockPrisma = {
     findMany: jest.fn(),
     count: jest.fn(),
   },
-  $transaction: jest.fn(),
 };
 
 describe('StudentsRepository', () => {
@@ -126,11 +125,12 @@ describe('StudentsRepository', () => {
   });
 
   describe('findWithTeachersPaginated', () => {
-    it('resolves students and total via $transaction', async () => {
+    it('resolves students with teachers and total count', async () => {
       const students = [
         { ...makeStudent('s@test.com'), teachers: [{ teacher: { email: 't@test.com' } }] },
       ];
-      mockPrisma.$transaction.mockResolvedValue([students, 1]);
+      mockPrisma.student.findMany.mockResolvedValue(students);
+      mockPrisma.student.count.mockResolvedValue(1);
 
       const result = await repository.findWithTeachersPaginated(0, 10);
 
@@ -138,10 +138,7 @@ describe('StudentsRepository', () => {
       expect(result.total).toBe(1);
     });
 
-    it('passes skip and take to findMany and count', async () => {
-      mockPrisma.$transaction.mockImplementation(
-        async (ops: Promise<unknown>[]) => Promise.all(ops),
-      );
+    it('passes skip and take to findMany', async () => {
       mockPrisma.student.findMany.mockResolvedValue([]);
       mockPrisma.student.count.mockResolvedValue(0);
 
@@ -153,7 +150,8 @@ describe('StudentsRepository', () => {
     });
 
     it('returns empty students and zero total when table is empty', async () => {
-      mockPrisma.$transaction.mockResolvedValue([[], 0]);
+      mockPrisma.student.findMany.mockResolvedValue([]);
+      mockPrisma.student.count.mockResolvedValue(0);
 
       const result = await repository.findWithTeachersPaginated(0, 10);
 

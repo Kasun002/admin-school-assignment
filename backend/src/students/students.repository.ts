@@ -42,7 +42,7 @@ export class StudentsRepository {
     skip: number,
     take: number,
   ): Promise<{ students: StudentWithTeachers[]; total: number }> {
-    const [students, total] = await this.prisma.$transaction([
+    const [students, total] = await Promise.all([
       this.prisma.student.findMany({
         skip,
         take,

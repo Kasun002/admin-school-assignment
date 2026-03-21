@@ -10,7 +10,7 @@ A teacher administration system built with NestJS (backend) and Next.js (fronten
 | Backend API | https://admin-school-assignment-production.up.railway.app |
 | Swagger docs (API) | https://admin-school-assignment-production.up.railway.app/api/docs |
 
-<video controls src="Screen Recording 2026-03-21 at 10.35.41 PM.mov" title="Title"></video>
+<video controls src="SS.mp4" title="Title"></video>
 
 ## Prerequisites
 
