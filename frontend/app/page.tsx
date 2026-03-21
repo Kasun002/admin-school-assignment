@@ -12,10 +12,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-white border-b shadow-sm">
+      <header className="bg-white border-b shadow-sm sticky top-0 z-50">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-800">School Admin</h1>
+            <h1 className="text-xl font-bold text-gray-800">School Admin (By Kasun Abaywardana)</h1>
             <p className="text-xs text-gray-500 mt-0.5">Teacher administration panel</p>
           </div>
           <button

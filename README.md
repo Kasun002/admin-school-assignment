@@ -2,9 +2,17 @@
 
 A teacher administration system built with NestJS (backend) and Next.js (frontend). Teachers can register students, find common students, suspend students, and retrieve notification recipients.
 
+## Hosted API
+
+| Service | URL |
+|---|---|
+| Frontend | https://admin-school-assignment.vercel.app |
+| Backend API | https://admin-school-assignment-production.up.railway.app |
+| Swagger docs | https://admin-school-assignment-production.up.railway.app/api/docs |
+
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) v18+
+- [Node.js](https://nodejs.org/) v20+
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for MySQL)
 - [pnpm](https://pnpm.io/) (for frontend)
 
@@ -80,7 +88,7 @@ pnpm run dev
 | `POST` | `/api/retrievefornotifications` | Get notification recipients |
 | `GET` | `/api/students` | (Extra API) List all students with status and teachers (paginated) |
 
-Full interactive documentation is available at `http://localhost:3001/api/docs` when the server is running.
+Full interactive documentation is available at `http://localhost:3001/api/docs` when running locally, or at https://admin-school-assignment-production.up.railway.app/api/docs for the hosted API.
 
 ---
 
@@ -104,9 +112,38 @@ npm run test:cov      # with coverage report
 
 ---
 
+## Deployment
+
+### Backend → Railway
+
+1. Create a [Railway](https://railway.app) account and create a new project
+2. Add a **MySQL** plugin to the project (Railway sets `DATABASE_URL` automatically)
+3. Connect your GitHub repository and select the `backend` folder as the root
+4. Railway will use `railway.json` — no extra config needed
+5. Set these environment variables in the Railway dashboard:
+
+| Variable | Value |
+|---|---|
+| `ALLOWED_ORIGINS` | Your Vercel frontend URL, e.g. `https://your-app.vercel.app` |
+| `NODE_ENV` | `production` |
+
+> `DATABASE_URL` and `PORT` are set automatically by Railway.
+
+### Frontend → Vercel
+
+1. Import the repository on [Vercel](https://vercel.com)
+2. Set **Root Directory** to `frontend`
+3. Set this environment variable in Vercel:
+
+| Variable | Value |
+|---|---|
+| `BACKEND_URL` | Your Railway backend URL, e.g. `https://your-backend.up.railway.app` |
+
+---
+
 ## Tech Stack
 
 - **Backend**: NestJS, Prisma ORM, MySQL 8, class-validator, Swagger
 - **Frontend**: Next.js 16, React Hook Form, Axios, Tailwind CSS
 - **Testing**: Jest, @nestjs/testing (unit tests, no DB required)
-- **Infrastructure**: Docker Compose (MySQL + Adminer)
+- **Infrastructure**: Docker Compose (MySQL + Adminer) / Railway + Vercel (production)

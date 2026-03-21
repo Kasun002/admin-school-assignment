@@ -5,7 +5,7 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 
 export const metadata: Metadata = {
-  title: "School Admin",
+  title: "School Admin (By Kasun Abaywardana)",
   description: "Teacher administration panel for managing students",
 };
 
