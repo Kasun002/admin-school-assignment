@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Student } from '@prisma/client';
+import { Student } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 type StudentWithTeachers = Student & {
@@ -42,10 +42,8 @@ export class StudentsRepository {
     skip: number,
     take: number,
   ): Promise<{ students: StudentWithTeachers[]; total: number }> {
-    const where: Prisma.StudentWhereInput = {};
     const [students, total] = await this.prisma.$transaction([
       this.prisma.student.findMany({
-        where,
         skip,
         take,
         orderBy: { createdAt: 'asc' },
@@ -53,7 +51,7 @@ export class StudentsRepository {
           teachers: { include: { teacher: { select: { email: true } } } },
         },
       }),
-      this.prisma.student.count({ where }),
+      this.prisma.student.count(),
     ]);
     return { students, total };
   }

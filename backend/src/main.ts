@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { NestFactory } from '@nestjs/core';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -10,10 +9,12 @@ function extractMessages(errors: ValidationError[]): string[] {
   const messages: string[] = [];
   for (const error of errors) {
     if (error.constraints) {
-      messages.push(...Object.values(error.constraints));
+      messages.push(
+        ...Object.values(error.constraints as Record<string, string>),
+      );
     }
     if (error.children?.length) {
-      messages.push(...extractMessages(error.children));
+      messages.push(...extractMessages(error.children as ValidationError[]));
     }
   }
   return messages;
@@ -28,7 +29,10 @@ async function bootstrap(): Promise<void> {
     .filter(Boolean);
 
   app.enableCors({
-    origin: (origin, callback) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {

@@ -7,18 +7,19 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { RegistrationsService } from './registrations.service';
-import { RegisterDto } from './dto/register.dto';
-import { SuspendDto } from './dto/suspend.dto';
-import { RetrieveNotificationsDto } from './dto/retrieve-notifications.dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ErrorResponseDto } from '../common/dto/error-response.dto';
+import { CommonStudentsQueryDto } from './dto/common-students-query.dto';
 import { CommonStudentsResponseDto } from './dto/common-students-response.dto';
 import { NotificationRecipientsResponseDto } from './dto/notification-recipients-response.dto';
-import { ErrorResponseDto } from '../common/dto/error-response.dto';
+import { RegisterDto } from './dto/register.dto';
+import { RetrieveNotificationsDto } from './dto/retrieve-notifications.dto';
+import { SuspendDto } from './dto/suspend.dto';
 import {
   ICommonStudentsResult,
   INotificationRecipientsResult,
 } from './interfaces/registration.interface';
+import { RegistrationsService } from './registrations.service';
 
 @ApiTags('registrations')
 @Controller('api')
@@ -42,13 +43,6 @@ export class RegistrationsController {
   @ApiOperation({
     summary: 'Retrieve students common to a given list of teachers',
   })
-  @ApiQuery({
-    name: 'teacher',
-    required: true,
-    isArray: true,
-    example: 'teacherken@gmail.com',
-    description: 'One or more teacher email addresses',
-  })
   @ApiResponse({
     status: 200,
     description: 'List of common students',
@@ -60,10 +54,9 @@ export class RegistrationsController {
     type: ErrorResponseDto,
   })
   async commonStudents(
-    @Query('teacher') teacher: string | string[],
+    @Query() query: CommonStudentsQueryDto,
   ): Promise<ICommonStudentsResult> {
-    const teacherEmails = Array.isArray(teacher) ? teacher : [teacher];
-    return this.registrationsService.getCommonStudents(teacherEmails);
+    return this.registrationsService.getCommonStudents(query.teacher);
   }
 
   @Post('suspend')

@@ -36,30 +36,22 @@ describe('RegistrationsController', () => {
   });
 
   describe('commonStudents', () => {
-    it('wraps a single teacher string in an array', async () => {
+    it('passes validated teacher array from query DTO to service', async () => {
       mockService.getCommonStudents.mockResolvedValue({ students: [] });
+      const query = { teacher: ['teacher1@gmail.com', 'teacher2@gmail.com'] };
 
-      await controller.commonStudents('teacherken@gmail.com');
+      await controller.commonStudents(query);
 
-      expect(mockService.getCommonStudents).toHaveBeenCalledWith([
-        'teacherken@gmail.com',
-      ]);
-    });
-
-    it('passes an array of teachers directly', async () => {
-      mockService.getCommonStudents.mockResolvedValue({ students: [] });
-      const teachers = ['teacher1@gmail.com', 'teacher2@gmail.com'];
-
-      await controller.commonStudents(teachers);
-
-      expect(mockService.getCommonStudents).toHaveBeenCalledWith(teachers);
+      expect(mockService.getCommonStudents).toHaveBeenCalledWith(query.teacher);
     });
 
     it('returns the service result', async () => {
       const response = { students: ['common@gmail.com'] };
       mockService.getCommonStudents.mockResolvedValue(response);
 
-      const result = await controller.commonStudents('t@test.com');
+      const result = await controller.commonStudents({
+        teacher: ['t@test.com'],
+      });
 
       expect(result).toEqual(response);
     });
