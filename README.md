@@ -102,6 +102,22 @@ npm test              # run all unit tests
 npm run test:cov      # with coverage report
 ```
 
+**65 tests across 9 test suites** — all unit tests, no real database required (fully mocked).
+
+| Module | Test file | What's covered |
+|---|---|---|
+| Registrations service | `registrations.service.spec.ts` | Register with cross-table email validation, common students, suspend student, retrieve notification recipients (mention extraction, dedup, suspension filter) |
+| Registrations repository | `registrations.repository.spec.ts` | Raw SQL for common students, link/upsert operations |
+| Registrations controller | `registrations.controller.spec.ts` | HTTP layer delegation, response shape |
+| Students service | `students.service.spec.ts` | Upsert, suspend with not-found guard, active-email filter, paginated list |
+| Students repository | `students.repository.spec.ts` | Paginated findMany+count, suspend update, active-email query |
+| Students controller | `students.controller.spec.ts` | Pagination query params forwarded correctly |
+| Teachers service | `teachers.service.spec.ts` | Upsert and findByEmail delegation |
+| Teachers repository | `teachers.repository.spec.ts` | Upsert and findUnique calls |
+| HTTP exception filter | `http-exception.filter.spec.ts` | `{ message }` shape for string/array/object bodies, 500 fallback |
+
+![alt text](image.png)
+
 ---
 
 ## Environment Variables
