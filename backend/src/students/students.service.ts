@@ -1,0 +1,24 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Student } from '@prisma/client';
+import { StudentsRepository } from './students.repository';
+
+@Injectable()
+export class StudentsService {
+  constructor(private readonly studentsRepository: StudentsRepository) {}
+
+  async upsertByEmail(email: string): Promise<Student> {
+    return this.studentsRepository.upsertByEmail(email);
+  }
+
+  async suspend(email: string): Promise<void> {
+    const student = await this.studentsRepository.findByEmail(email);
+    if (!student) {
+      throw new NotFoundException(`Student ${email} does not exist`);
+    }
+    await this.studentsRepository.suspend(email);
+  }
+
+  async findActiveByEmails(emails: string[]): Promise<Student[]> {
+    return this.studentsRepository.findActiveByEmails(emails);
+  }
+}
