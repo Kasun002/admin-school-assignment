@@ -8,7 +8,7 @@ A teacher administration system built with NestJS (backend) and Next.js (fronten
 |---|---|
 | Frontend | https://admin-school-assignment.vercel.app |
 | Backend API | https://admin-school-assignment-production.up.railway.app |
-| Swagger docs | https://admin-school-assignment-production.up.railway.app/api/docs |
+| Swagger docs (API) | https://admin-school-assignment-production.up.railway.app/api/docs |
 
 <video controls src="Screen Recording 2026-03-21 at 10.35.41 PM.mov" title="Title"></video>
 
