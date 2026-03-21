@@ -6,7 +6,9 @@ const mockPrisma = {
   teacherStudent: {
     upsert: jest.fn(),
   },
-  $queryRaw: jest.fn(),
+  student: {
+    findMany: jest.fn(),
+  },
 };
 
 describe('RegistrationsRepository', () => {
@@ -40,10 +42,22 @@ describe('RegistrationsRepository', () => {
   });
 
   describe('findStudentsRegisteredToAllTeachers', () => {
-    it('returns emails from raw query result', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([
-        { email: 'common1@gmail.com' },
-        { email: 'common2@gmail.com' },
+    it('returns emails of students registered to all given teachers', async () => {
+      // DB returns students linked to at least one teacher; JS filter keeps only those linked to ALL
+      mockPrisma.student.findMany.mockResolvedValue([
+        {
+          email: 'common1@gmail.com',
+          teachers: [{ teacherId: 1 }, { teacherId: 2 }],
+        },
+        {
+          email: 'common2@gmail.com',
+          teachers: [{ teacherId: 1 }, { teacherId: 2 }],
+        },
+        {
+          // linked to only one of the two teachers — should be excluded
+          email: 'partial@gmail.com',
+          teachers: [{ teacherId: 1 }],
+        },
       ]);
 
       const result = await repository.findStudentsRegisteredToAllTeachers([
@@ -55,7 +69,7 @@ describe('RegistrationsRepository', () => {
     });
 
     it('returns empty array when no common students', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([]);
+      mockPrisma.student.findMany.mockResolvedValue([]);
 
       const result = await repository.findStudentsRegisteredToAllTeachers([
         'teacher1@gmail.com',
@@ -66,8 +80,8 @@ describe('RegistrationsRepository', () => {
   });
 
   describe('findActiveStudentEmailsForTeacher', () => {
-    it('returns emails from raw query result', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([
+    it('returns emails of active students for a teacher', async () => {
+      mockPrisma.student.findMany.mockResolvedValue([
         { email: 'studentbob@gmail.com' },
       ]);
 
@@ -79,7 +93,7 @@ describe('RegistrationsRepository', () => {
     });
 
     it('returns empty array when teacher has no active students', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([]);
+      mockPrisma.student.findMany.mockResolvedValue([]);
 
       const result = await repository.findActiveStudentEmailsForTeacher(
         'teacherken@gmail.com',

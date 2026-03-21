@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -20,32 +19,46 @@ export class RegistrationsRepository {
   async findStudentsRegisteredToAllTeachers(
     teacherEmails: string[],
   ): Promise<string[]> {
-    const emailList = Prisma.join(teacherEmails);
     const count = teacherEmails.length;
-    const results = await this.prisma.$queryRaw<{ email: string }[]>`
-      SELECT s.email
-      FROM students s
-      INNER JOIN teacher_students ts ON ts.studentId = s.id
-      INNER JOIN teachers t ON t.id = ts.teacherId
-      WHERE t.email IN (${emailList})
-        AND s.isSuspended = false
-      GROUP BY s.id, s.email
-      HAVING COUNT(DISTINCT t.id) = ${count}
-    `;
-    return results.map((r) => r.email);
+    const students = await this.prisma.student.findMany({
+      where: {
+        isSuspended: false,
+        teachers: {
+          some: {
+            teacher: { email: { in: teacherEmails } },
+          },
+        },
+      },
+      select: {
+        email: true,
+        teachers: {
+          where: { teacher: { email: { in: teacherEmails } } },
+          select: { teacherId: true },
+        },
+      },
+    });
+
+    // Keep only students linked to ALL of the given teachers
+    return students
+      .filter((s) => s.teachers.length === count)
+      .map((s) => s.email);
   }
 
   async findActiveStudentEmailsForTeacher(
     teacherEmail: string,
   ): Promise<string[]> {
-    const results = await this.prisma.$queryRaw<{ email: string }[]>`
-      SELECT s.email
-      FROM students s
-      INNER JOIN teacher_students ts ON ts.studentId = s.id
-      INNER JOIN teachers t ON t.id = ts.teacherId
-      WHERE t.email = ${teacherEmail}
-        AND s.isSuspended = false
-    `;
-    return results.map((r) => r.email);
+    const students = await this.prisma.student.findMany({
+      where: {
+        isSuspended: false,
+        teachers: {
+          some: {
+            teacher: { email: teacherEmail },
+          },
+        },
+      },
+      select: { email: true },
+    });
+
+    return students.map((s) => s.email);
   }
 }
