@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { TeachersService } from '../teachers/teachers.service';
 import { StudentsService } from '../students/students.service';
 import { RegistrationsRepository } from './registrations.repository';
@@ -20,6 +24,28 @@ export class RegistrationsService {
   ) {}
 
   async register(dto: RegisterDto): Promise<void> {
+    const teacherAsStudent = await this.studentsService.findByEmail(
+      dto.teacher,
+    );
+    if (teacherAsStudent) {
+      throw new BadRequestException(
+        `Email ${dto.teacher} is already registered as a student`,
+      );
+    }
+
+    const conflictingStudents = await Promise.all(
+      dto.students.map(async (email) => {
+        const asTeacher = await this.teachersService.findByEmail(email);
+        return asTeacher ? email : null;
+      }),
+    );
+    const conflicts = conflictingStudents.filter(Boolean);
+    if (conflicts.length > 0) {
+      throw new BadRequestException(
+        `The following emails are already registered as teachers: ${conflicts.join(', ')}`,
+      );
+    }
+
     const teacher = await this.teachersService.upsertByEmail(dto.teacher);
 
     await Promise.all(

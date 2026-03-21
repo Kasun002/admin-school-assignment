@@ -10,6 +10,10 @@ export class StudentsService {
     return this.studentsRepository.upsertByEmail(email);
   }
 
+  async findByEmail(email: string): Promise<Student | null> {
+    return this.studentsRepository.findByEmail(email);
+  }
+
   async suspend(email: string): Promise<void> {
     const student = await this.studentsRepository.findByEmail(email);
     if (!student) {
