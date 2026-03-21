@@ -1,0 +1,28 @@
+{
+  "name": "admin-school-assignment",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && pnpm run dev",
+    "dev:backend": "cd backend && npm run start:dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:frontend": "cd frontend && pnpm run build",
+    "build:backend": "cd backend && npm run build",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:frontend": "cd frontend && pnpm run start",
+    "start:backend": "cd backend && npm run start",
+    "start:prod": "cd backend && npm run start:prod",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:frontend": "cd frontend && pnpm run lint",
+    "lint:backend": "cd backend && npm run lint",
+    "test": "npm run test:backend",
+    "test:backend": "cd backend && npm run test",
+    "test:cov": "cd backend && npm run test:cov",
+    "test:e2e": "cd backend && npm run test:e2e",
+    "install:all": "cd frontend && pnpm install && cd ../backend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
