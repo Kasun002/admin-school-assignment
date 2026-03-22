@@ -5,13 +5,19 @@ import {
   HttpStatus,
   NotFoundException,
 } from '@nestjs/common';
+import { Logger } from 'nestjs-pino';
 import { HttpExceptionFilter } from '../../common/filters/http-exception.filter';
 
-function buildMockHost() {
+const mockLogger = {
+  error: jest.fn(),
+} as unknown as Logger;
+
+function buildMockHost(method = 'GET', url = '/test') {
   const json = jest.fn();
   const status = jest.fn().mockReturnValue({ json });
   const getResponse = jest.fn().mockReturnValue({ status });
-  const switchToHttp = jest.fn().mockReturnValue({ getResponse });
+  const getRequest = jest.fn().mockReturnValue({ method, url });
+  const switchToHttp = jest.fn().mockReturnValue({ getResponse, getRequest });
   const host = { switchToHttp } as unknown as ArgumentsHost;
   return { host, status, json };
 }
@@ -20,7 +26,8 @@ describe('HttpExceptionFilter', () => {
   let filter: HttpExceptionFilter;
 
   beforeEach(() => {
-    filter = new HttpExceptionFilter();
+    jest.clearAllMocks();
+    filter = new HttpExceptionFilter(mockLogger);
   });
 
   it('returns 400 with string message for BadRequestException with string body', () => {
@@ -49,7 +56,10 @@ describe('HttpExceptionFilter', () => {
 
   it('falls back to exception.message when body message is not a string or array', () => {
     const { host, json } = buildMockHost();
-    const exception = new HttpException({ message: 42 }, HttpStatus.BAD_REQUEST);
+    const exception = new HttpException(
+      { message: 42 },
+      HttpStatus.BAD_REQUEST,
+    );
     filter.catch(exception, host);
 
     expect((json.mock.calls[0][0] as { message: string }).message).toBeTruthy();
@@ -63,9 +73,35 @@ describe('HttpExceptionFilter', () => {
     expect(json).toHaveBeenCalledWith({ message: 'Internal server error' });
   });
 
+  it('logs 5xx errors via the logger', () => {
+    const { host } = buildMockHost('POST', '/api/register');
+    const error = new Error('db connection lost');
+    filter.catch(error, host);
+
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      expect.objectContaining({
+        err: error,
+        method: 'POST',
+        url: '/api/register',
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      }),
+      'Unhandled server error',
+    );
+  });
+
+  it('does not log 4xx errors', () => {
+    const { host } = buildMockHost();
+    filter.catch(new BadRequestException('bad input'), host);
+
+    expect(mockLogger.error).not.toHaveBeenCalled();
+  });
+
   it('handles plain string body (not an object)', () => {
     const { host, json } = buildMockHost();
-    const exception = new HttpException('plain string body', HttpStatus.FORBIDDEN);
+    const exception = new HttpException(
+      'plain string body',
+      HttpStatus.FORBIDDEN,
+    );
     filter.catch(exception, host);
 
     expect(json).toHaveBeenCalledWith({ message: 'plain string body' });

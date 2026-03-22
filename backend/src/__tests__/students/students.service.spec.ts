@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { getLoggerToken } from 'nestjs-pino';
 import { StudentsService } from '../../students/students.service';
 import { StudentsRepository } from '../../students/students.repository';
+
+const mockLogger = { info: jest.fn() };
 
 const makeStudent = (email: string, isSuspended = false) => ({
   id: 1,
@@ -16,9 +19,14 @@ describe('StudentsService', () => {
   let repository: jest.Mocked<StudentsRepository>;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         StudentsService,
+        {
+          provide: getLoggerToken(StudentsService.name),
+          useValue: mockLogger,
+        },
         {
           provide: StudentsRepository,
           useValue: {
@@ -98,6 +106,18 @@ describe('StudentsService', () => {
 
       await expect(service.suspend('nobody@test.com')).rejects.toThrow();
       expect(repository.suspend).not.toHaveBeenCalled();
+    });
+
+    it('logs info after successful suspension', async () => {
+      repository.findByEmail.mockResolvedValue(makeStudent('s@test.com'));
+      repository.suspend.mockResolvedValue(makeStudent('s@test.com', true));
+
+      await service.suspend('s@test.com');
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { email: 's@test.com' },
+        'Student suspended',
+      );
     });
   });
 

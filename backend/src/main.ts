@@ -2,8 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import type { ValidationError } from 'class-validator';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 function extractMessages(errors: ValidationError[]): string[] {
   const messages: string[] = [];
@@ -56,7 +56,7 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useLogger(app.get(Logger));
 
   const config = new DocumentBuilder()
     .setTitle('School Admin API')

@@ -1,11 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Student } from '@prisma/client';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { StudentsRepository } from './students.repository';
 import { PaginatedStudentsResponseDto } from './dto/student-with-teachers.dto';
 
 @Injectable()
 export class StudentsService {
-  constructor(private readonly studentsRepository: StudentsRepository) {}
+  constructor(
+    @InjectPinoLogger(StudentsService.name)
+    private readonly logger: PinoLogger,
+    private readonly studentsRepository: StudentsRepository,
+  ) {}
 
   async upsertByEmail(email: string): Promise<Student> {
     return this.studentsRepository.upsertByEmail(email);
@@ -21,6 +26,7 @@ export class StudentsService {
       throw new NotFoundException(`Student ${email} does not exist`);
     }
     await this.studentsRepository.suspend(email);
+    this.logger.info({ email }, 'Student suspended');
   }
 
   async findActiveByEmails(emails: string[]): Promise<Student[]> {

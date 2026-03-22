@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { TeachersService } from '../teachers/teachers.service';
 import { StudentsService } from '../students/students.service';
 import { RegistrationsRepository } from './registrations.repository';
@@ -18,6 +19,8 @@ export class RegistrationsService {
   private readonly mentionRegex = /@([\w.+-]+@[\w-]+\.[\w.]+)/g;
 
   constructor(
+    @InjectPinoLogger(RegistrationsService.name)
+    private readonly logger: PinoLogger,
     private readonly teachersService: TeachersService,
     private readonly studentsService: StudentsService,
     private readonly registrationsRepository: RegistrationsRepository,
@@ -28,6 +31,10 @@ export class RegistrationsService {
       dto.teacher,
     );
     if (teacherAsStudent) {
+      this.logger.warn(
+        { teacher: dto.teacher },
+        'Registration rejected: teacher email is already registered as a student',
+      );
       throw new BadRequestException(
         `Email ${dto.teacher} is already registered as a student`,
       );
@@ -41,6 +48,10 @@ export class RegistrationsService {
     );
     const conflicts = conflictingStudents.filter(Boolean);
     if (conflicts.length > 0) {
+      this.logger.warn(
+        { conflicts },
+        'Registration rejected: student emails are already registered as teachers',
+      );
       throw new BadRequestException(
         `The following emails are already registered as teachers: ${conflicts.join(', ')}`,
       );
@@ -56,6 +67,11 @@ export class RegistrationsService {
           student.id,
         );
       }),
+    );
+
+    this.logger.info(
+      { teacher: dto.teacher, studentCount: dto.students.length },
+      'Students registered to teacher',
     );
   }
 

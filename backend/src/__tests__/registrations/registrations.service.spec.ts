@@ -1,9 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { getLoggerToken } from 'nestjs-pino';
 import { RegistrationsService } from '../../registrations/registrations.service';
 import { TeachersService } from '../../teachers/teachers.service';
 import { StudentsService } from '../../students/students.service';
 import { RegistrationsRepository } from '../../registrations/registrations.repository';
+
+const mockLogger = { info: jest.fn(), warn: jest.fn() };
 
 const makeTeacher = (email = 'teacherken@gmail.com') => ({
   id: 1,
@@ -27,9 +30,14 @@ describe('RegistrationsService', () => {
   let registrationsRepo: jest.Mocked<RegistrationsRepository>;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RegistrationsService,
+        {
+          provide: getLoggerToken(RegistrationsService.name),
+          useValue: mockLogger,
+        },
         {
           provide: TeachersService,
           useValue: {
@@ -132,6 +140,40 @@ describe('RegistrationsService', () => {
 
       await expect(service.register(dto)).rejects.toThrow(BadRequestException);
       expect(teachersService.upsertByEmail).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning when teacher email is already a student', async () => {
+      studentsService.findByEmail.mockResolvedValue(makeStudent(dto.teacher));
+
+      await service.register(dto).catch(() => {});
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.objectContaining({ teacher: dto.teacher }),
+        expect.any(String),
+      );
+    });
+
+    it('logs a warning when student emails are already teachers', async () => {
+      teachersService.findByEmail.mockResolvedValue(makeTeacher(dto.students[0]));
+
+      await service.register(dto).catch(() => {});
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.objectContaining({ conflicts: expect.any(Array) }),
+        expect.any(String),
+      );
+    });
+
+    it('logs info after successful registration', async () => {
+      await service.register(dto);
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.objectContaining({
+          teacher: dto.teacher,
+          studentCount: dto.students.length,
+        }),
+        'Students registered to teacher',
+      );
     });
   });
 
