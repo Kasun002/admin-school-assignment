@@ -83,8 +83,12 @@ describe('RegistrationsService', () => {
       await service.register(dto);
 
       expect(teachersService.upsertByEmail).toHaveBeenCalledWith(dto.teacher);
-      expect(studentsService.upsertByEmail).toHaveBeenCalledTimes(dto.students.length);
-      expect(registrationsRepo.linkTeacherToStudent).toHaveBeenCalledTimes(dto.students.length);
+      expect(studentsService.upsertByEmail).toHaveBeenCalledTimes(
+        dto.students.length,
+      );
+      expect(registrationsRepo.linkTeacherToStudent).toHaveBeenCalledTimes(
+        dto.students.length,
+      );
     });
 
     it('throws BadRequestException when teacher email is already a student', async () => {
@@ -102,10 +106,14 @@ describe('RegistrationsService', () => {
     });
 
     it('throws BadRequestException when a student email is already a teacher', async () => {
-      teachersService.findByEmail.mockResolvedValue(makeTeacher(dto.students[0]));
+      teachersService.findByEmail.mockResolvedValue(
+        makeTeacher(dto.students[0]),
+      );
 
       await expect(service.register(dto)).rejects.toThrow(BadRequestException);
-      await expect(service.register(dto)).rejects.toThrow('already registered as teachers');
+      await expect(service.register(dto)).rejects.toThrow(
+        'already registered as teachers',
+      );
     });
 
     it('includes all conflicting emails in the error message', async () => {
@@ -113,13 +121,14 @@ describe('RegistrationsService', () => {
         dto.students.includes(email) ? makeTeacher(email) : null,
       );
 
-      const err = await service.register(dto).catch((e: Error) => e);
-      expect(err.message).toContain(dto.students[0]);
-      expect(err.message).toContain(dto.students[1]);
+      await expect(service.register(dto)).rejects.toThrow(dto.students[0]);
+      await expect(service.register(dto)).rejects.toThrow(dto.students[1]);
     });
 
     it('does not proceed to upsert when teacher conflict is detected', async () => {
-      studentsService.findByEmail.mockResolvedValueOnce(makeStudent(dto.teacher));
+      studentsService.findByEmail.mockResolvedValueOnce(
+        makeStudent(dto.teacher),
+      );
 
       await expect(service.register(dto)).rejects.toThrow(BadRequestException);
       expect(teachersService.upsertByEmail).not.toHaveBeenCalled();
@@ -129,19 +138,25 @@ describe('RegistrationsService', () => {
   describe('getCommonStudents', () => {
     it('returns students from repository', async () => {
       const emails = ['common@gmail.com'];
-      registrationsRepo.findStudentsRegisteredToAllTeachers.mockResolvedValue(emails);
+      registrationsRepo.findStudentsRegisteredToAllTeachers.mockResolvedValue(
+        emails,
+      );
 
-      const result = await service.getCommonStudents(['teacher1@gmail.com', 'teacher2@gmail.com']);
-
-      expect(result).toEqual({ students: emails });
-      expect(registrationsRepo.findStudentsRegisteredToAllTeachers).toHaveBeenCalledWith([
+      const result = await service.getCommonStudents([
         'teacher1@gmail.com',
         'teacher2@gmail.com',
       ]);
+
+      expect(result).toEqual({ students: emails });
+      expect(
+        registrationsRepo.findStudentsRegisteredToAllTeachers,
+      ).toHaveBeenCalledWith(['teacher1@gmail.com', 'teacher2@gmail.com']);
     });
 
     it('returns empty list when no common students', async () => {
-      registrationsRepo.findStudentsRegisteredToAllTeachers.mockResolvedValue([]);
+      registrationsRepo.findStudentsRegisteredToAllTeachers.mockResolvedValue(
+        [],
+      );
 
       const result = await service.getCommonStudents(['teacher1@gmail.com']);
 
@@ -250,8 +265,10 @@ describe('RegistrationsService', () => {
         notification: 'Hey @studentbob@gmail.com',
       });
 
-      const callArg = studentsService.findActiveByEmails.mock.calls[0][0] as string[];
-      const occurrences = callArg.filter((e) => e === 'studentbob@gmail.com').length;
+      const callArg = studentsService.findActiveByEmails.mock.calls[0][0];
+      const occurrences = callArg.filter(
+        (e) => e === 'studentbob@gmail.com',
+      ).length;
       expect(occurrences).toBe(1);
     });
 
