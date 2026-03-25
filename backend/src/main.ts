@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -14,7 +15,7 @@ function extractMessages(errors: ValidationError[]): string[] {
       );
     }
     if (error.children?.length) {
-      messages.push(...extractMessages(error.children as ValidationError[]));
+      messages.push(...extractMessages(error.children));
     }
   }
   return messages;
