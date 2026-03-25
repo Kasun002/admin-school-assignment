@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Student } from '../../generated/prisma/client';
+import { Student } from '../generated/prisma/client';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { StudentsRepository } from './students.repository';
 import { PaginatedStudentsResponseDto } from './dto/student-with-teachers.dto';
