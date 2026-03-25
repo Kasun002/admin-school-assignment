@@ -23,6 +23,7 @@ WORKDIR /app
 
 COPY package*.json ./
 COPY prisma ./prisma/
+COPY --from=builder /app/prisma.config.ts ./
 
 RUN npm ci --omit=dev && npm cache clean --force
 
