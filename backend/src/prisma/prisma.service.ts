@@ -9,12 +9,14 @@ export class PrismaService
 {
   constructor() {
     const dbUrl = new URL(process.env.DATABASE_URL!);
+    const connectionLimit = parseInt(process.env.DB_POOL_SIZE ?? '5');
     const adapter = new PrismaMariaDb({
       host: dbUrl.hostname,
       port: parseInt(dbUrl.port) || 3306,
       user: dbUrl.username,
       password: dbUrl.password,
       database: dbUrl.pathname.slice(1),
+      connectionLimit,
     });
     super({ adapter });
   }
