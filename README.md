@@ -41,6 +41,7 @@ The default `.env` values work out of the box with the Docker setup.
 ```bash
 cd backend
 npm install
+prisma generate
 npx prisma migrate deploy
 ```
 
@@ -50,7 +51,7 @@ From the **root** directory:
 
 ```bash
 npm install
-npm run dev
+npm run start
 ```
 
 | Service | URL |
@@ -74,8 +75,13 @@ npm run start:dev
 ### Frontend only
 
 ```bash
+cp frontend/.env.example frontend/.env
+```
+
+```bash
 cd frontend
-pnpm run dev
+npm i
+npm run dev
 ```
 
 ---
